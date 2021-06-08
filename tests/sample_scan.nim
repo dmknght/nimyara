@@ -130,7 +130,6 @@ proc createScan*(dbPath: string, scanMode: int, isFastScan: bool, fileOrDirName 
     echo "create_scanner_error"
     return -7
 
-  # try:
   if scanMode == 1:
     yr_scanner_set_callback(scanner, callback_scan, addr(user_data))
     scanDir(scanner, fileOrDirName, addr(user_data), total_scan, err)
@@ -140,9 +139,6 @@ proc createScan*(dbPath: string, scanMode: int, isFastScan: bool, fileOrDirName 
   elif scanMode == 2:
     yr_scanner_set_callback(scanner, callback_scan_process, addr(user_data))
     scanProcesses(scanner, addr(user_data), total_scan, err)
-  # except:
-  #   discard
-  # finally:
   echo "Total: ", total_scan, " [Scanned: ", total_scan - err, " Err: ", err, "]"
   echo "Infected: ", user_data.current_count
   if scanner != nil:
@@ -153,4 +149,4 @@ proc createScan*(dbPath: string, scanMode: int, isFastScan: bool, fileOrDirName 
     discard yr_rules_destroy(rules)
   discard yr_finalize()
 
-discard createScan("rule.yara", 0, false, "testsig")
+discard createScan("rule.db", 0, false, "testsig")
