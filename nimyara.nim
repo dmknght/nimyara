@@ -68,8 +68,6 @@ macro defineEnum(typ: untyped): untyped =
 
 # {.pragma: impyaraHdr, header: "libyara/include/yara.h".}
 # On debian based distro, when users install `libyara-dev`, all headers are at `/usr/include/yara/`
-{.passC: "-I" & "/usr/include/yara/".}
-# Import the struct _YR_MAPPED_FILE from filemap.h
 {.pragma: impyaraHdr_filemap, header: "/usr/include/yara/filemap.h".}
 {.pragma: impyaraHdr_stream, header: "/usr/include/yara/stream.h".}
 {.pragma: impyaraHdr_arena, header: "/usr/include/yara/arena.h".}
@@ -85,7 +83,6 @@ macro defineEnum(typ: untyped): untyped =
 {.pragma: impyaraHdr_modules, header: "/usr/include/yara/modules.h".}
 {.pragma: impyaraHdr_scanner, header: "/usr/include/yara/scanner.h".}
 {.pragma: impyaraHdr_strutils, header: "/usr/include/yara/strutils.h".}
-{.pragma: impyaraHdr_filemap, header: "/usr/include/yara/filemap.h".}
 {.pragma: impyaraHdr_bitmask, header: "/usr/include/yara/bitmask.h".}
 {.pragma: impyaraHdr_ac, header: "/usr/include/yara/ahocorasick.h".}
 {.pragma: impyaraHdr_scan, header: "/usr/include/yara/scan.h".}
@@ -96,11 +93,6 @@ macro defineEnum(typ: untyped): untyped =
 {.pragma: impyaraHdr_mem, header: "/usr/include/yara/mem.h".}
 
 {.experimental: "codeReordering".}
-# {.passC: "-I" & currentSourcePath().splitPath.head.} # https://forum.nim-lang.org/t/2668
-# When users install `libyara4`, all libs are at /usr/lib/x86_64-linux-gnu/, name libyara.so.4 and libyara.so.4.0.5
-# {.passL: currentSourcePath().splitPath.head & "/libyara/.libs/libyara.a".}
-# {.passL: "/usr/lib/x86_64-linux-gnu/libyara.so.4".}
-# {.passL: "-lssl -lcrypto -lpthread -lm".} # Add nix Lib that yara import
 {.passL: "-lssl -lcrypto -lpthread -lm -lyara".} # Add nix Lib that yara import
 defineEnum(YR_CONFIG_NAME)    ## ```
                           ##   Enumerated type listing configuration options
@@ -525,7 +517,7 @@ type
     reloc_list_tail*: ptr YR_RELOC ## ```
                                 ##   Tail of the list containing relocation entries.
                                 ## ```
-  
+
   YR_ARENA_BUFFER* {.importc, impyaraHdr_arena, bycopy.} = object
     data*: ptr uint8            ## ```
                   ##   Pointer the buffer's data.
@@ -536,7 +528,7 @@ type
     used*: uint ## ```
               ##   Number of bytes that are actually used (equal to or lower than size).
               ## ```
-  
+
   YR_ARENA_REF* {.importc, impyaraHdr_arena, bycopy.} = object
     buffer_id*: uint32
     offset*: uint32
@@ -551,7 +543,7 @@ type
     next*: ptr YR_RELOC         ## ```
                      ##   Pointer to the next entry in the list.
                      ## ```
-  
+
   YR_HASH_TABLE_ENTRY* {.bycopy, impyaraHdr_hash, importc: "struct _YR_HASH_TABLE_ENTRY".} = object
     key*: pointer
     key_length*: uint
@@ -1354,9 +1346,9 @@ proc yr_filemap_unmap*(pmapped_file: ptr YR_MAPPED_FILE) {.importc, cdecl, impya
 proc yr_filemap_unmap_fd*(pmapped_file: ptr YR_MAPPED_FILE) {.importc, cdecl,
     impyaraHdr_filemap.}
 proc yr_stream_read*(`ptr`: pointer; size: uint; count: uint; stream: ptr YR_STREAM): uint {.
-    importc, cdecl, impyaraHdr_filemap.}
+    importc, cdecl, impyaraHdr_stream.}
 proc yr_stream_write*(`ptr`: pointer; size: uint; count: uint; stream: ptr YR_STREAM): uint {.
-    importc, cdecl, impyaraHdr_filemap.}
+    importc, cdecl, impyaraHdr_stream.}
 proc yr_arena_create*(num_buffers: cint; initial_buffer_size: uint;
                      arena: ptr ptr YR_ARENA): cint {.importc, cdecl, impyaraHdr_arena.}
   ## ```
