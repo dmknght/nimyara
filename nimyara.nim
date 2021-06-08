@@ -22,7 +22,6 @@
 # const 'end_declarations' has unsupported value 'return ERROR_SUCCESS; }'
 {.push hint[ConvFromXtoItselfNotNeeded]: off.}
 import macros
-from os import splitPath
 
 macro defineEnum(typ: untyped): untyped =
   result = newNimNode(nnkStmtList)
@@ -66,32 +65,7 @@ macro defineEnum(typ: untyped): untyped =
     proc `notop`*(x: `typ`): `typ` {.borrow.}
 
 
-# {.pragma: impyaraHdr, header: "libyara/include/yara.h".}
-# On debian based distro, when users install `libyara-dev`, all headers are at `/usr/include/yara/`
-{.pragma: impyaraHdr_filemap, header: "/usr/include/yara/filemap.h".}
-{.pragma: impyaraHdr_stream, header: "/usr/include/yara/stream.h".}
-{.pragma: impyaraHdr_arena, header: "/usr/include/yara/arena.h".}
-{.pragma: impyaraHdr_hash, header: "/usr/include/yara/hash.h".}
-{.pragma: impyaraHdr_sizedstr, header: "/usr/include/yara/sizedstr.h".}
-{.pragma: impyaraHdr_stopwatch, header: "/usr/include/yara/stopwatch.h".}
-{.pragma: impyaraHdr_threading, header: "/usr/include/yara/threading.h".}
-{.pragma: impyaraHdr_notebook, header: "/usr/include/yara/notebook.h".}
-{.pragma: impyaraHdr_re, header: "/usr/include/yara/re.h".}
-{.pragma: impyaraHdr_types, header: "/usr/include/yara/types.h".}
-{.pragma: impyaraHdr_atoms, header: "/usr/include/yara/atoms.h".}
-{.pragma: impyaraHdr_compiler, header: "/usr/include/yara/compiler.h".}
-{.pragma: impyaraHdr_modules, header: "/usr/include/yara/modules.h".}
-{.pragma: impyaraHdr_scanner, header: "/usr/include/yara/scanner.h".}
-{.pragma: impyaraHdr_strutils, header: "/usr/include/yara/strutils.h".}
-{.pragma: impyaraHdr_bitmask, header: "/usr/include/yara/bitmask.h".}
-{.pragma: impyaraHdr_ac, header: "/usr/include/yara/ahocorasick.h".}
-{.pragma: impyaraHdr_scan, header: "/usr/include/yara/scan.h".}
-{.pragma: impyaraHdr_rules, header: "/usr/include/yara/rules.h".}
-{.pragma: impyaraHdr_exec, header: "/usr/include/yara/exec.h".}
-{.pragma: impyaraHdr_object, header: "/usr/include/yara/object.h".}
-{.pragma: impyaraHdr_lyara, header: "/usr/include/yara/libyara.h".}
-{.pragma: impyaraHdr_mem, header: "/usr/include/yara/mem.h".}
-
+{.pragma: impyaraHdr, header: "yara.h".}
 {.experimental: "codeReordering".}
 {.passL: "-lssl -lcrypto -lpthread -lm -lyara".} # Add nix Lib that yara import
 defineEnum(YR_CONFIG_NAME)    ## ```
@@ -480,22 +454,22 @@ type
   pthread_t = object
   timespec = object
   timeval = object
-  YR_MAPPED_FILE* {.bycopy, impyaraHdr_filemap, importc: "struct _YR_MAPPED_FILE".} = object
+  YR_MAPPED_FILE* {.bycopy, impyaraHdr, importc: "struct _YR_MAPPED_FILE".} = object
     file*: cint
     size*: uint
     data*: ptr uint8
 
-  YR_STREAM_READ_FUNC* {.importc, impyaraHdr_stream.} = proc (`ptr`: pointer; size: uint;
+  YR_STREAM_READ_FUNC* {.importc, impyaraHdr.} = proc (`ptr`: pointer; size: uint;
       count: uint; user_data: pointer): uint {.cdecl.}
-  YR_STREAM_WRITE_FUNC* {.importc, impyaraHdr_stream.} = proc (`ptr`: pointer; size: uint;
+  YR_STREAM_WRITE_FUNC* {.importc, impyaraHdr.} = proc (`ptr`: pointer; size: uint;
       count: uint; user_data: pointer): uint {.cdecl.}
-  YR_STREAM* {.bycopy, impyaraHdr_stream, importc: "struct _YR_STREAM".} = object
+  YR_STREAM* {.bycopy, impyaraHdr, importc: "struct _YR_STREAM".} = object
     user_data*: pointer
     read*: YR_STREAM_READ_FUNC
     write*: YR_STREAM_WRITE_FUNC
 
-  yr_arena_off_t* {.importc, impyaraHdr_arena.} = uint32
-  YR_ARENA* {.importc, impyaraHdr_arena, bycopy.} = object
+  yr_arena_off_t* {.importc, impyaraHdr.} = uint32
+  YR_ARENA* {.importc, impyaraHdr, bycopy.} = object
     xrefs*: cint ## ```
                ##   Number of users of this arena. This is set to one when the arena is created,
                ##      and can be incremented by calling yr_arena_acquire. On each call
@@ -518,7 +492,7 @@ type
                                 ##   Tail of the list containing relocation entries.
                                 ## ```
 
-  YR_ARENA_BUFFER* {.importc, impyaraHdr_arena, bycopy.} = object
+  YR_ARENA_BUFFER* {.importc, impyaraHdr, bycopy.} = object
     data*: ptr uint8            ## ```
                   ##   Pointer the buffer's data.
                   ## ```
@@ -529,11 +503,11 @@ type
               ##   Number of bytes that are actually used (equal to or lower than size).
               ## ```
 
-  YR_ARENA_REF* {.importc, impyaraHdr_arena, bycopy.} = object
+  YR_ARENA_REF* {.importc, impyaraHdr, bycopy.} = object
     buffer_id*: uint32
     offset*: uint32
 
-  YR_RELOC* {.importc, impyaraHdr_arena, bycopy.} = object
+  YR_RELOC* {.importc, impyaraHdr, bycopy.} = object
     buffer_id*: uint32         ## ```
                      ##   Buffer ID associated to this relocation entry.
                      ## ```
@@ -544,20 +518,20 @@ type
                      ##   Pointer to the next entry in the list.
                      ## ```
 
-  YR_HASH_TABLE_ENTRY* {.bycopy, impyaraHdr_hash, importc: "struct _YR_HASH_TABLE_ENTRY".} = object
+  YR_HASH_TABLE_ENTRY* {.bycopy, impyaraHdr, importc: "struct _YR_HASH_TABLE_ENTRY".} = object
     key*: pointer
     key_length*: uint
     ns*: cstring
     value*: pointer
     next*: ptr YR_HASH_TABLE_ENTRY
 
-  YR_HASH_TABLE* {.bycopy, impyaraHdr_hash, importc: "struct _YR_HASH_TABLE".} = object
+  YR_HASH_TABLE* {.bycopy, impyaraHdr, importc: "struct _YR_HASH_TABLE".} = object
     size*: cint
     buckets*: array[1, ptr YR_HASH_TABLE_ENTRY]
 
-  YR_HASH_TABLE_FREE_VALUE_FUNC* {.importc, impyaraHdr_hash.} = proc (value: pointer): cint {.
+  YR_HASH_TABLE_FREE_VALUE_FUNC* {.importc, impyaraHdr.} = proc (value: pointer): cint {.
       cdecl.}
-  SIZED_STRING* {.bycopy, impyaraHdr_sizedstr, importc: "struct _SIZED_STRING".} = object ## ```
+  SIZED_STRING* {.bycopy, impyaraHdr, importc: "struct _SIZED_STRING".} = object ## ```
                                                                           ##   This struct is used to support strings containing null chars. The length of
                                                                           ##      the string is stored along the string data. However the string data is also
                                                                           ##      terminated with a null char.
@@ -566,23 +540,23 @@ type
     flags*: uint32
     c_string*: array[1, cchar]
 
-  YR_STOPWATCH* {.bycopy, impyaraHdr_stopwatch, importc: "struct _YR_STOPWATCH".} = object
+  YR_STOPWATCH* {.bycopy, impyaraHdr, importc: "struct _YR_STOPWATCH".} = object
     tv_start*: timeval
     ts_start*: timespec
 
-  YR_THREAD_ID* {.importc, impyaraHdr_threading.} = pthread_t
-  YR_THREAD_STORAGE_KEY* {.importc, impyaraHdr_threading.} = pthread_key_t
-  YR_MUTEX* {.importc, impyaraHdr_threading.} = pthread_mutex_t
-  YR_NOTEBOOK* {.importc, impyaraHdr_notebook, incompleteStruct.} = object
-  RE* {.importc, impyaraHdr_re, bycopy.} = object
+  YR_THREAD_ID* {.importc, impyaraHdr.} = pthread_t
+  YR_THREAD_STORAGE_KEY* {.importc, impyaraHdr.} = pthread_key_t
+  YR_MUTEX* {.importc, impyaraHdr.} = pthread_mutex_t
+  YR_NOTEBOOK* {.importc, impyaraHdr, incompleteStruct.} = object
+  RE* {.importc, impyaraHdr, bycopy.} = object
     flags*: uint32
     code*: array[0, uint8]
 
-  RE_AST* {.importc, impyaraHdr_re, bycopy.} = object
+  RE_AST* {.importc, impyaraHdr, bycopy.} = object
     flags*: uint32
     root_node*: ptr RE_NODE
 
-  RE_NODE* {.importc, impyaraHdr_re, bycopy.} = object
+  RE_NODE* {.importc, impyaraHdr, bycopy.} = object
     `type`*: cint
     value*: cint
     count*: cint
@@ -598,14 +572,14 @@ type
     forward_code_ref*: YR_ARENA_REF
     backward_code_ref*: YR_ARENA_REF
 
-  RE_CLASS* {.importc, impyaraHdr_re, bycopy.} = object
+  RE_CLASS* {.importc, impyaraHdr, bycopy.} = object
     negated*: uint8
     bitmap*: array[32, uint8]
 
-  RE_ERROR* {.importc, impyaraHdr_re, bycopy.} = object
+  RE_ERROR* {.importc, impyaraHdr, bycopy.} = object
     message*: array[384, cchar]
 
-  RE_FIBER* {.importc, impyaraHdr_re, bycopy.} = object
+  RE_FIBER* {.importc, impyaraHdr, bycopy.} = object
     ip*: ptr uint8              ## ```
                 ##   instruction pointer
                 ## ```
@@ -619,15 +593,15 @@ type
     next*: ptr RE_FIBER
     stack*: array[1024, uint16]
 
-  RE_FIBER_LIST* {.importc, impyaraHdr_re, bycopy.} = object
+  RE_FIBER_LIST* {.importc, impyaraHdr, bycopy.} = object
     head*: ptr RE_FIBER
     tail*: ptr RE_FIBER
 
-  RE_FIBER_POOL* {.importc, impyaraHdr_re, bycopy.} = object
+  RE_FIBER_POOL* {.importc, impyaraHdr, bycopy.} = object
     fiber_count*: cint
     fibers*: RE_FIBER_LIST
 
-  YR_AC_STATE* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_AC_STATE* {.importc, impyaraHdr, bycopy.} = object
     failure*: ptr YR_AC_STATE
     first_child*: ptr YR_AC_STATE
     siblings*: ptr YR_AC_STATE
@@ -639,7 +613,7 @@ type
     input*: uint8
     t_table_slot*: uint32
 
-  YR_AC_AUTOMATON* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_AC_AUTOMATON* {.importc, impyaraHdr, bycopy.} = object
     arena*: ptr YR_ARENA ## ```
                       ##   Arena used by this automaton to store the transition and match tables.
                       ## ```
@@ -658,9 +632,9 @@ type
     root*: ptr YR_AC_STATE      ## ```
                         ##   Pointer to the root Aho-Corasick state.
                         ## ```
-  
-  YR_AC_TABLES* {.importc, impyaraHdr_types, incompleteStruct.} = object
-  YR_AC_MATCH_LIST_ENTRY* {.importc, impyaraHdr_types, bycopy.} = object
+
+  YR_AC_TABLES* {.importc, impyaraHdr, incompleteStruct.} = object
+  YR_AC_MATCH_LIST_ENTRY* {.importc, impyaraHdr, bycopy.} = object
     backtrack*: uint16
     string_idx*: uint32
     `ref`*: YR_ARENA_REF
@@ -668,7 +642,7 @@ type
     backward_code_ref*: YR_ARENA_REF
     next*: ptr YR_AC_MATCH_LIST_ENTRY
 
-  YR_AC_MATCH* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_AC_MATCH* {.importc, impyaraHdr, bycopy.} = object
     string*: ptr YR_STRING
     string_g*: YR_ARENA_REF
     forward_code*: ptr uint8
@@ -686,25 +660,25 @@ type
                      ##      position in the input is 6 (the "b" after the "r"), but the match is at
                      ##      position 3. The backtrack field indicates how many bytes the scanner has
                      ##      to go back to find the point where the match actually start.
-                     ##     
+                     ##
                      ##      YR_ALIGN(8) forces the backtrack field to be treated as a 8-bytes field
                      ##      and therefore the struct's size is 40 bytes. This is necessary only for
                      ##      32-bits versions of YARA compiled with Visual Studio. See: #1358.
                      ## ```
-  
-  YR_NAMESPACE* {.importc, impyaraHdr_types, bycopy.} = object
+
+  YR_NAMESPACE* {.importc, impyaraHdr, bycopy.} = object
     name*: cstring
     name_g*: YR_ARENA_REF
     idx*: uint32 ## ```
                ##   Index of this namespace in the array of YR_NAMESPACE structures stored
                ##      in YR_NAMESPACES_TABLE.
-               ##     
+               ##
                ##      YR_ALIGN(8) forces the idx field to be treated as a 8-bytes field
                ##      and therefore the struct's size is 16 bytes. This is necessary only for
                ##      32-bits versions of YARA compiled with Visual Studio. See: #1358.
                ## ```
-  
-  YR_META* {.importc, impyaraHdr_types, bycopy.} = object
+
+  YR_META* {.importc, impyaraHdr, bycopy.} = object
     identifier*: cstring
     identifier_g*: YR_ARENA_REF
     string*: cstring
@@ -713,12 +687,12 @@ type
     `type`*: int32
     flags*: int32
 
-  YR_MATCHES* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_MATCHES* {.importc, impyaraHdr, bycopy.} = object
     head*: ptr YR_MATCH
     tail*: ptr YR_MATCH
     count*: int32
 
-  YR_STRING* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_STRING* {.importc, impyaraHdr, bycopy.} = object
     flags*: uint32 ## ```
                  ##   Flags, see STRING_FLAGS_XXX macros defined above.
                  ## ```
@@ -755,7 +729,7 @@ type
     identifier*: cstring
     identifier_g*: YR_ARENA_REF
 
-  YR_RULE* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_RULE* {.importc, impyaraHdr, bycopy.} = object
     flags*: int32
     num_atoms*: int32          ## ```
                     ##   Number of atoms generated for this rule.
@@ -771,7 +745,7 @@ type
     ns*: ptr YR_NAMESPACE
     ns_g*: YR_ARENA_REF
 
-  YR_RULES* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_RULES* {.importc, impyaraHdr, bycopy.} = object
     arena*: ptr YR_ARENA
     rules_list_head*: ptr YR_RULE
     strings_list_head*: ptr YR_STRING
@@ -789,13 +763,13 @@ type
     num_namespaces*: uint32    ## ```
                           ##   Total number of namespaces.
                           ## ```
-  
-  YR_SUMMARY* {.importc, impyaraHdr_types, bycopy.} = object
+
+  YR_SUMMARY* {.importc, impyaraHdr, bycopy.} = object
     num_rules*: uint32
     num_strings*: uint32
     num_namespaces*: uint32
 
-  YR_RULES_STATS* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_RULES_STATS* {.importc, impyaraHdr, bycopy.} = object
     num_rules*: uint32         ## ```
                      ##   Total number of rules
                      ## ```
@@ -824,8 +798,8 @@ type
     ac_tables_size*: uint32    ## ```
                           ##   Size of Aho-Corasick transition & match tables.
                           ## ```
-  
-  YR_PROFILING_INFO* {.importc, impyaraHdr_types, bycopy.} = object ## ```
+
+  YR_PROFILING_INFO* {.importc, impyaraHdr, bycopy.} = object ## ```
                                                         ##   YR_PROFILING_INFO contains profiling information for a rule.
                                                         ## ```
     atom_matches*: uint32 ## ```
@@ -841,21 +815,21 @@ type
     exec_time*: uint64 ## ```
                      ##   Amount of time (in nanoseconds) spent evaluating the rule condition.
                      ## ```
-  
-  YR_RULE_PROFILING_INFO* {.importc, impyaraHdr_types, bycopy.} = object ## ```
+
+  YR_RULE_PROFILING_INFO* {.importc, impyaraHdr, bycopy.} = object ## ```
                                                              ##   YR_RULE_PROFILING_INFO is the structure returned by
                                                              ##      yr_scanner_get_profiling_info
                                                              ## ```
     rule*: ptr YR_RULE
     cost*: uint64
 
-  YR_EXTERNAL_VARIABLE* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_EXTERNAL_VARIABLE* {.importc, impyaraHdr, bycopy.} = object
     `type`*: int32
     value*: Union_yarah13
     identifier*: cstring
     identifier_g*: YR_ARENA_REF
 
-  YR_MATCH* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_MATCH* {.importc, impyaraHdr, bycopy.} = object
     base*: int64               ## ```
                ##   Base address for the match
                ## ```
@@ -881,7 +855,7 @@ type
                        ## ```
     is_private*: bool
 
-  YR_SCAN_CONTEXT* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_SCAN_CONTEXT* {.importc, impyaraHdr, bycopy.} = object
     file_size*: uint64         ## ```
                      ##   File size of the file being scanned.
                      ## ```
@@ -955,8 +929,8 @@ type
                                         ##   profiling_info is a pointer to an array of YR_PROFILING_INFO structures,
                                         ##      one per rule. Entry N has the profiling information for rule with index N.
                                         ## ```
-  
-  YR_VALUE* {.importc, impyaraHdr_types, bycopy.} = object
+
+  YR_VALUE* {.importc, impyaraHdr, bycopy.} = object
     i*: int64
     d*: cdouble
     p*: pointer
@@ -966,12 +940,12 @@ type
     ss*: ptr SIZED_STRING
     re*: ptr RE
 
-  YR_VALUE_STACK* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_VALUE_STACK* {.importc, impyaraHdr, bycopy.} = object
     sp*: int32
     capacity*: int32
     items*: ptr YR_VALUE
 
-  YR_OBJECT* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_OBJECT* {.importc, impyaraHdr, bycopy.} = object
     canary*: cint
     `type`*: int8
     identifier*: cstring
@@ -979,7 +953,7 @@ type
     data*: pointer
     value*: YR_VALUE
 
-  YR_OBJECT_STRUCTURE* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_OBJECT_STRUCTURE* {.importc, impyaraHdr, bycopy.} = object
     canary*: cint
     `type`*: int8
     identifier*: cstring
@@ -987,7 +961,7 @@ type
     data*: pointer
     members*: ptr YR_STRUCTURE_MEMBER
 
-  YR_OBJECT_ARRAY* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_OBJECT_ARRAY* {.importc, impyaraHdr, bycopy.} = object
     canary*: cint
     `type`*: int8
     identifier*: cstring
@@ -996,7 +970,7 @@ type
     prototype_item*: ptr YR_OBJECT
     items*: ptr YR_ARRAY_ITEMS
 
-  YR_OBJECT_DICTIONARY* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_OBJECT_DICTIONARY* {.importc, impyaraHdr, bycopy.} = object
     canary*: cint
     `type`*: int8
     identifier*: cstring
@@ -1005,7 +979,7 @@ type
     prototype_item*: ptr YR_OBJECT
     items*: ptr YR_DICTIONARY_ITEMS
 
-  YR_OBJECT_FUNCTION* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_OBJECT_FUNCTION* {.importc, impyaraHdr, bycopy.} = object
     canary*: cint
     `type`*: int8
     identifier*: cstring
@@ -1015,11 +989,11 @@ type
     arguments_fmt*: cstring
     code*: YR_MODULE_FUNC
 
-  YR_STRUCTURE_MEMBER* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_STRUCTURE_MEMBER* {.importc, impyaraHdr, bycopy.} = object
     `object`*: ptr YR_OBJECT
     next*: ptr YR_STRUCTURE_MEMBER
 
-  YR_ARRAY_ITEMS* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_ARRAY_ITEMS* {.importc, impyaraHdr, bycopy.} = object
     capacity*: cint            ## ```
                   ##   Capacity is the size of the objects array.
                   ## ```
@@ -1029,13 +1003,13 @@ type
                 ## ```
     objects*: array[1, ptr YR_OBJECT]
 
-  YR_DICTIONARY_ITEMS* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_DICTIONARY_ITEMS* {.importc, impyaraHdr, bycopy.} = object
     used*: cint
     free*: cint
     key*: ptr SIZED_STRING
     obj*: ptr YR_OBJECT
 
-  YR_MODULE* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_MODULE* {.importc, impyaraHdr, bycopy.} = object
     name*: cstring
     declarations*: YR_EXT_DECLARATIONS_FUNC
     load*: YR_EXT_LOAD_FUNC
@@ -1043,78 +1017,78 @@ type
     initialize*: YR_EXT_INITIALIZE_FUNC
     finalize*: YR_EXT_FINALIZE_FUNC
 
-  YR_MODULE_IMPORT* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_MODULE_IMPORT* {.importc, impyaraHdr, bycopy.} = object
     module_name*: cstring
     module_data*: pointer
     module_data_size*: uint
 
-  YR_MEMORY_BLOCK* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_MEMORY_BLOCK* {.importc, impyaraHdr, bycopy.} = object
     size*: uint
     base*: uint64
     context*: pointer
     fetch_data*: YR_MEMORY_BLOCK_FETCH_DATA_FUNC
 
-  YR_MEMORY_BLOCK_ITERATOR* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_MEMORY_BLOCK_ITERATOR* {.importc, impyaraHdr, bycopy.} = object
     context*: pointer
     first*: YR_MEMORY_BLOCK_ITERATOR_FUNC
     next*: YR_MEMORY_BLOCK_ITERATOR_FUNC
 
-  YR_MODIFIER* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_MODIFIER* {.importc, impyaraHdr, bycopy.} = object
     flags*: int32
     xor_min*: uint8
     xor_max*: uint8
     alphabet*: ptr SIZED_STRING
 
-  YR_ITERATOR* {.importc, impyaraHdr_types, bycopy.} = object
+  YR_ITERATOR* {.importc, impyaraHdr, bycopy.} = object
     next*: YR_ITERATOR_NEXT_FUNC
     array_it*: YR_ARRAY_ITERATOR
     dict_it*: YR_DICT_ITERATOR
     int_range_it*: YR_INT_RANGE_ITERATOR
     int_enum_it*: YR_INT_ENUM_ITERATOR
 
-  YR_AC_TRANSITION* {.importc, impyaraHdr_types.} = uint32
-  Union_yarah13* {.union, bycopy, impyaraHdr_types, importc: "union Union_yarah13".} = object
+  YR_AC_TRANSITION* {.importc, impyaraHdr.} = uint32
+  Union_yarah13* {.union, bycopy, impyaraHdr, importc: "union Union_yarah13".} = object
     i*: int64
     f*: cdouble
     s*: cstring
 
-  YR_MEMORY_BLOCK_FETCH_DATA_FUNC* {.importc, impyaraHdr_types.} = proc (
+  YR_MEMORY_BLOCK_FETCH_DATA_FUNC* {.importc, impyaraHdr.} = proc (
       self: ptr YR_MEMORY_BLOCK): ptr uint8 {.cdecl.}
-  YR_MEMORY_BLOCK_ITERATOR_FUNC* {.importc, impyaraHdr_types.} = proc (
+  YR_MEMORY_BLOCK_ITERATOR_FUNC* {.importc, impyaraHdr.} = proc (
       self: ptr YR_MEMORY_BLOCK_ITERATOR): ptr YR_MEMORY_BLOCK {.cdecl.}
-  YR_CALLBACK_FUNC* {.importc, impyaraHdr_types.} = proc (context: ptr YR_SCAN_CONTEXT;
+  YR_CALLBACK_FUNC* {.importc, impyaraHdr.} = proc (context: ptr YR_SCAN_CONTEXT;
       message: cint; message_data: pointer; user_data: pointer): cint {.cdecl.}
-  YR_MODULE_FUNC* {.importc, impyaraHdr_types.} = proc (args: ptr YR_VALUE;
+  YR_MODULE_FUNC* {.importc, impyaraHdr.} = proc (args: ptr YR_VALUE;
       context: ptr YR_SCAN_CONTEXT; function_obj: ptr YR_OBJECT_FUNCTION): cint {.cdecl.}
-  YR_ITERATOR_NEXT_FUNC* {.importc, impyaraHdr_types.} = proc (self: ptr YR_ITERATOR;
+  YR_ITERATOR_NEXT_FUNC* {.importc, impyaraHdr.} = proc (self: ptr YR_ITERATOR;
       stack: ptr YR_VALUE_STACK): cint {.cdecl.}
-  YR_ARRAY_ITERATOR* {.bycopy, impyaraHdr_types, importc: "struct YR_ARRAY_ITERATOR".} = object
+  YR_ARRAY_ITERATOR* {.bycopy, impyaraHdr, importc: "struct YR_ARRAY_ITERATOR".} = object
     array*: ptr YR_OBJECT
     index*: cint
 
-  YR_DICT_ITERATOR* {.bycopy, impyaraHdr_types, importc: "struct YR_DICT_ITERATOR".} = object
+  YR_DICT_ITERATOR* {.bycopy, impyaraHdr, importc: "struct YR_DICT_ITERATOR".} = object
     dict*: ptr YR_OBJECT
     index*: cint
 
-  YR_INT_RANGE_ITERATOR* {.bycopy, impyaraHdr_types,
+  YR_INT_RANGE_ITERATOR* {.bycopy, impyaraHdr,
                           importc: "struct YR_INT_RANGE_ITERATOR".} = object
     next*: int64
     last*: int64
 
-  YR_INT_ENUM_ITERATOR* {.bycopy, impyaraHdr_types,
+  YR_INT_ENUM_ITERATOR* {.bycopy, impyaraHdr,
                          importc: "struct YR_INT_ENUM_ITERATOR".} = object
     next*: cint
     count*: cint
     items*: array[1, int64]
 
-  RE_MATCH_CALLBACK_FUNC* {.importc, impyaraHdr_re.} = proc (match: ptr uint8;
+  RE_MATCH_CALLBACK_FUNC* {.importc, impyaraHdr.} = proc (match: ptr uint8;
       match_length: cint; flags: cint; args: pointer): cint {.cdecl.}
-  YR_ATOM* {.importc, impyaraHdr_atoms, bycopy.} = object
+  YR_ATOM* {.importc, impyaraHdr, bycopy.} = object
     length*: uint8
     bytes*: array[4, uint8]
     mask*: array[4, uint8]
 
-  YR_ATOM_TREE_NODE* {.importc, impyaraHdr_atoms, bycopy.} = object
+  YR_ATOM_TREE_NODE* {.importc, impyaraHdr, bycopy.} = object
     `type`*: uint8
     atom*: YR_ATOM
     re_nodes*: array[4, ptr RE_NODE] ## ```
@@ -1124,35 +1098,35 @@ type
     children_tail*: ptr YR_ATOM_TREE_NODE
     next_sibling*: ptr YR_ATOM_TREE_NODE
 
-  YR_ATOM_TREE* {.importc, impyaraHdr_atoms, bycopy.} = object
+  YR_ATOM_TREE* {.importc, impyaraHdr, bycopy.} = object
     root_node*: ptr YR_ATOM_TREE_NODE
 
-  YR_ATOM_LIST_ITEM* {.importc, impyaraHdr_atoms, bycopy.} = object
+  YR_ATOM_LIST_ITEM* {.importc, impyaraHdr, bycopy.} = object
     atom*: YR_ATOM
     backtrack*: uint16
     forward_code_ref*: YR_ARENA_REF
     backward_code_ref*: YR_ARENA_REF
     next*: ptr YR_ATOM_LIST_ITEM
 
-  YR_ATOM_QUALITY_TABLE_ENTRY* {.importc, impyaraHdr_atoms, bycopy.} = object
+  YR_ATOM_QUALITY_TABLE_ENTRY* {.importc, impyaraHdr, bycopy.} = object
     atom*: array[4, uint8]
     quality*: uint8
 
-  YR_ATOMS_CONFIG* {.importc, impyaraHdr_atoms, bycopy.} = object
+  YR_ATOMS_CONFIG* {.importc, impyaraHdr, bycopy.} = object
     get_atom_quality*: YR_ATOMS_QUALITY_FUNC
     quality_table*: ptr YR_ATOM_QUALITY_TABLE_ENTRY
     quality_warning_threshold*: cint
     quality_table_entries*: cint
     free_quality_table*: bool
 
-  YR_ATOMS_QUALITY_FUNC* {.importc, impyaraHdr_atoms.} = proc (config: ptr YR_ATOMS_CONFIG;
+  YR_ATOMS_QUALITY_FUNC* {.importc, impyaraHdr.} = proc (config: ptr YR_ATOMS_CONFIG;
       atom: ptr YR_ATOM): cint {.cdecl.}
-  Union_yarah22* {.union, bycopy, impyaraHdr_atoms, importc: "union Union_yarah22".} = object
+  Union_yarah22* {.union, bycopy, impyaraHdr, importc: "union Union_yarah22".} = object
     integer*: int64
     `object`*: ptr YR_OBJECT
     sized_string_ref*: YR_ARENA_REF
 
-  Type_yarah3* {.bycopy, impyaraHdr_atoms, importc: "struct Type_yarah3".} = object ## ```
+  Type_yarah3* {.bycopy, impyaraHdr, importc: "struct Type_yarah3".} = object ## ```
                                                                        ##   An expression can have an associated identifier, if "ptr" is not NULL it
                                                                        ##      points to the identifier name, if it is NULL, then "ref" holds a reference
                                                                        ##      to the identifier within YR_SZ_POOL. When the identifier is in YR_SZ_POOL
@@ -1162,7 +1136,7 @@ type
     `ptr`*: cstring
     `ref`*: YR_ARENA_REF
 
-  YR_EXPRESSION* {.bycopy, impyaraHdr_compiler, importc: "struct _YR_EXPRESSION".} = object
+  YR_EXPRESSION* {.bycopy, impyaraHdr, importc: "struct _YR_EXPRESSION".} = object
     `type`*: cint
     value*: Union_yarah22
     identifier*: Type_yarah3 ## ```
@@ -1172,23 +1146,23 @@ type
                            ##      a pointer can't be used as the YR_SZ_POOL can be moved to a different
                            ##      memory location.
                            ## ```
-  
-  YR_COMPILER_CALLBACK_FUNC* {.importc, impyaraHdr_compiler.} = proc (error_level: cint;
+
+  YR_COMPILER_CALLBACK_FUNC* {.importc, impyaraHdr.} = proc (error_level: cint;
       file_name: cstring; line_number: cint; rule: ptr YR_RULE; message: cstring;
       user_data: pointer) {.cdecl.}
-  YR_COMPILER_INCLUDE_CALLBACK_FUNC* {.importc, impyaraHdr_compiler.} = proc (
+  YR_COMPILER_INCLUDE_CALLBACK_FUNC* {.importc, impyaraHdr.} = proc (
       include_name: cstring; calling_rule_filename: cstring;
       calling_rule_namespace: cstring; user_data: pointer): cstring {.cdecl.}
-  YR_COMPILER_INCLUDE_FREE_FUNC* {.importc, impyaraHdr_compiler.} = proc (
+  YR_COMPILER_INCLUDE_FREE_FUNC* {.importc, impyaraHdr.} = proc (
       callback_result_ptr: cstring; user_data: pointer) {.cdecl.}
-  YR_COMPILER_RE_AST_CALLBACK_FUNC* {.importc, impyaraHdr_compiler.} = proc (
+  YR_COMPILER_RE_AST_CALLBACK_FUNC* {.importc, impyaraHdr.} = proc (
       rule: ptr YR_RULE; string_identifier: cstring; re_ast: ptr RE_AST;
       user_data: pointer) {.cdecl.}
-  YR_FIXUP* {.bycopy, impyaraHdr_compiler, importc: "struct _YR_FIXUP".} = object
+  YR_FIXUP* {.bycopy, impyaraHdr, importc: "struct _YR_FIXUP".} = object
     `ref`*: YR_ARENA_REF
     next*: ptr YR_FIXUP
 
-  YR_LOOP_CONTEXT* {.bycopy, impyaraHdr_compiler, importc: "struct _YR_LOOP_CONTEXT".} = object
+  YR_LOOP_CONTEXT* {.bycopy, impyaraHdr, importc: "struct _YR_LOOP_CONTEXT".} = object
     start_ref*: YR_ARENA_REF ## ```
                            ##   Reference indicating the the place in the code where the loop starts. The
                            ##      loop goes back to this address on each iteration.
@@ -1204,12 +1178,12 @@ type
                              ##      not defined by the rule itself but that are necessary for keeping the
                              ##      loop's state. One example is the iteration counter.
                              ## ```
-  
-  YR_COMPILER* {.bycopy, impyaraHdr_compiler, importc: "struct _YR_COMPILER".} = object
+
+  YR_COMPILER* {.bycopy, impyaraHdr, importc: "struct _YR_COMPILER".} = object
     arena*: ptr YR_ARENA ## ```
                       ##   Arena that contains the data generated by the compiled. The arena has
                       ##      the following buffers:
-                      ##     
+                      ##
                       ##        YR_SUMMARY_SECTION:
                       ##           A YR_SUMMARY struct.
                       ##        YR_RULES_TABLE:
@@ -1307,66 +1281,66 @@ type
     re_ast_callback*: YR_COMPILER_RE_AST_CALLBACK_FUNC
     atoms_config*: YR_ATOMS_CONFIG
 
-  YR_EXT_INITIALIZE_FUNC* {.importc, impyaraHdr_modules.} = proc (module: ptr YR_MODULE): cint {.
+  YR_EXT_INITIALIZE_FUNC* {.importc, impyaraHdr.} = proc (module: ptr YR_MODULE): cint {.
       cdecl.}
-  YR_EXT_FINALIZE_FUNC* {.importc, impyaraHdr_modules.} = proc (module: ptr YR_MODULE): cint {.
+  YR_EXT_FINALIZE_FUNC* {.importc, impyaraHdr.} = proc (module: ptr YR_MODULE): cint {.
       cdecl.}
-  YR_EXT_DECLARATIONS_FUNC* {.importc, impyaraHdr_modules.} = proc (
+  YR_EXT_DECLARATIONS_FUNC* {.importc, impyaraHdr.} = proc (
       module_object: ptr YR_OBJECT): cint {.cdecl.}
-  YR_EXT_LOAD_FUNC* {.importc, impyaraHdr_modules.} = proc (context: ptr YR_SCAN_CONTEXT;
+  YR_EXT_LOAD_FUNC* {.importc, impyaraHdr.} = proc (context: ptr YR_SCAN_CONTEXT;
       module_object: ptr YR_OBJECT; module_data: pointer; module_data_size: uint): cint {.
       cdecl.}
-  YR_EXT_UNLOAD_FUNC* {.importc, impyaraHdr_modules.} = proc (module_object: ptr YR_OBJECT): cint {.
+  YR_EXT_UNLOAD_FUNC* {.importc, impyaraHdr.} = proc (module_object: ptr YR_OBJECT): cint {.
       cdecl.}
-  YR_SCANNER* {.importc, impyaraHdr_scanner.} = YR_SCAN_CONTEXT
-var yr_scanner_scan_mem* {.importc: "_yr_scanner_scan_mem", impyaraHdr_scanner.}: proc (
+  YR_SCANNER* {.importc, impyaraHdr.} = YR_SCAN_CONTEXT
+var yr_scanner_scan_mem* {.importc: "_yr_scanner_scan_mem", impyaraHdr.}: proc (
     scanner: ptr YR_SCANNER; buffer: ptr uint8; buffer_size: uint): cint {.cdecl.}
-proc xtoi*(hexstr: cstring): uint64 {.importc, cdecl, impyaraHdr_strutils.}
+proc xtoi*(hexstr: cstring): uint64 {.importc, cdecl, impyaraHdr.}
   ## ```
   ##   Other "compilers" and later versions of Microsoft Visual Studio C++ and
   ##      Borland C/C++ define the types in <stdint.h>
   ##      Cygwin already has these functions.
   ## ```
-proc strlcpy*(dst: cstring; src: cstring; size: uint): uint {.importc, cdecl, impyaraHdr_strutils.}
-proc strlcat*(dst: cstring; src: cstring; size: uint): uint {.importc, cdecl, impyaraHdr_strutils.}
+proc strlcpy*(dst: cstring; src: cstring; size: uint): uint {.importc, cdecl, impyaraHdr.}
+proc strlcat*(dst: cstring; src: cstring; size: uint): uint {.importc, cdecl, impyaraHdr.}
 proc memmem*(haystack: pointer; haystack_size: uint; needle: pointer; needle_size: uint): pointer {.
-    importc, cdecl, impyaraHdr_strutils.}
-proc strnlen_w*(w_str: cstring): cint {.importc, cdecl, impyaraHdr_strutils.}
-proc strcmp_w*(w_str: cstring; str: cstring): cint {.importc, cdecl, impyaraHdr_strutils.}
-proc strlcpy_w*(dst: cstring; w_src: cstring; n: uint): uint {.importc, cdecl, impyaraHdr_strutils.}
+    importc, cdecl, impyaraHdr.}
+proc strnlen_w*(w_str: cstring): cint {.importc, cdecl, impyaraHdr.}
+proc strcmp_w*(w_str: cstring; str: cstring): cint {.importc, cdecl, impyaraHdr.}
+proc strlcpy_w*(dst: cstring; w_src: cstring; n: uint): uint {.importc, cdecl, impyaraHdr.}
 proc yr_filemap_map*(file_path: cstring; pmapped_file: ptr YR_MAPPED_FILE): cint {.
-    importc, cdecl, impyaraHdr_filemap.}
+    importc, cdecl, impyaraHdr.}
 proc yr_filemap_map_fd*(file: cint; offset: clong; size: uint;
                        pmapped_file: ptr YR_MAPPED_FILE): cint {.importc, cdecl,
-    impyaraHdr_filemap.}
+    impyaraHdr.}
 proc yr_filemap_map_ex*(file_path: cstring; offset: clong; size: uint;
                        pmapped_file: ptr YR_MAPPED_FILE): cint {.importc, cdecl,
-    impyaraHdr_filemap.}
-proc yr_filemap_unmap*(pmapped_file: ptr YR_MAPPED_FILE) {.importc, cdecl, impyaraHdr_filemap.}
+    impyaraHdr.}
+proc yr_filemap_unmap*(pmapped_file: ptr YR_MAPPED_FILE) {.importc, cdecl, impyaraHdr.}
 proc yr_filemap_unmap_fd*(pmapped_file: ptr YR_MAPPED_FILE) {.importc, cdecl,
-    impyaraHdr_filemap.}
+    impyaraHdr.}
 proc yr_stream_read*(`ptr`: pointer; size: uint; count: uint; stream: ptr YR_STREAM): uint {.
-    importc, cdecl, impyaraHdr_stream.}
+    importc, cdecl, impyaraHdr.}
 proc yr_stream_write*(`ptr`: pointer; size: uint; count: uint; stream: ptr YR_STREAM): uint {.
-    importc, cdecl, impyaraHdr_stream.}
+    importc, cdecl, impyaraHdr.}
 proc yr_arena_create*(num_buffers: cint; initial_buffer_size: uint;
-                     arena: ptr ptr YR_ARENA): cint {.importc, cdecl, impyaraHdr_arena.}
+                     arena: ptr ptr YR_ARENA): cint {.importc, cdecl, impyaraHdr.}
   ## ```
   ##   Creates an arena with the specified number of buffers and takes ownership of
   ##      it. Initially each buffer is empty, the first time that some data is written
   ##      into a buffer at least initial_buffer_size are reserved for the buffer.
   ## ```
-proc yr_arena_acquire*(arena: ptr YR_ARENA) {.importc, cdecl, impyaraHdr_arena.}
+proc yr_arena_acquire*(arena: ptr YR_ARENA) {.importc, cdecl, impyaraHdr.}
   ## ```
   ##   Takes ownership of the arena.
   ## ```
-proc yr_arena_release*(arena: ptr YR_ARENA): cint {.importc, cdecl, impyaraHdr_arena.}
+proc yr_arena_release*(arena: ptr YR_ARENA): cint {.importc, cdecl, impyaraHdr.}
   ## ```
   ##   Release ownership of the arena. If the number of owners drops to zero the
   ##      arena is destroyed and all its resources are freed.
   ## ```
 proc yr_arena_ref_to_ptr*(arena: ptr YR_ARENA; `ref`: ptr YR_ARENA_REF): pointer {.
-    importc, cdecl, impyaraHdr_arena.}
+    importc, cdecl, impyaraHdr.}
   ## ```
   ##   Given a reference to some data within the arena, it returns a pointer to
   ##      the data. This pointer is valid only until the next call to any of the
@@ -1376,7 +1350,7 @@ proc yr_arena_ref_to_ptr*(arena: ptr YR_ARENA; `ref`: ptr YR_ARENA_REF): pointer
   ##      valid any longer.
   ## ```
 proc yr_arena_ptr_to_ref*(arena: ptr YR_ARENA; address: pointer;
-                         `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl, impyaraHdr_arena.}
+                         `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl, impyaraHdr.}
   ## ```
   ##   Given a pointer into the arena, it returns a reference to it. The reference
   ##      can be used with yr_arena_ref_to_ptr to obtain a pointer again. Unlike
@@ -1384,409 +1358,409 @@ proc yr_arena_ptr_to_ref*(arena: ptr YR_ARENA; address: pointer;
   ##      are moved to a different memory location.
   ## ```
 proc yr_arena_get_ptr*(arena: ptr YR_ARENA; buffer_id: uint32; offset: yr_arena_off_t): pointer {.
-    importc, cdecl, impyaraHdr_arena.}
+    importc, cdecl, impyaraHdr.}
   ## ```
   ##   Given a buffer number and an offset within the buffer, returns a pointer
   ##      to that offset. The same limitations explained for yr_arena_ref_to_ptr
   ##      applies for the pointers returned by this function.
   ## ```
 proc yr_arena_get_current_offset*(arena: ptr YR_ARENA; buffer_id: uint32): yr_arena_off_t {.
-    importc, cdecl, impyaraHdr_arena.}
+    importc, cdecl, impyaraHdr.}
 proc yr_arena_allocate_memory*(arena: ptr YR_ARENA; buffer_id: uint32; size: uint;
                               `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl,
-    impyaraHdr_arena.}
+    impyaraHdr.}
 proc yr_arena_allocate_zeroed_memory*(arena: ptr YR_ARENA; buffer_id: uint32;
                                      size: uint; `ref`: ptr YR_ARENA_REF): cint {.
-    importc, cdecl, impyaraHdr_arena.}
+    importc, cdecl, impyaraHdr.}
 proc yr_arena_allocate_struct*(arena: ptr YR_ARENA; buffer_id: uint32; size: uint;
                               `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl,
-    impyaraHdr_arena, varargs.}
+    impyaraHdr, varargs.}
 proc yr_arena_make_ptr_relocatable*(arena: ptr YR_ARENA; buffer_id: uint32): cint {.
-    importc, cdecl, impyaraHdr_arena, varargs.}
+    importc, cdecl, impyaraHdr, varargs.}
 proc yr_arena_write_data*(arena: ptr YR_ARENA; buffer_id: uint32; data: pointer;
                          size: uint; `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl,
-    impyaraHdr_arena.}
+    impyaraHdr.}
 proc yr_arena_write_string*(arena: ptr YR_ARENA; buffer_id: uint32; string: cstring;
-                           `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl, impyaraHdr_arena.}
+                           `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl, impyaraHdr.}
 proc yr_arena_write_uint32*(arena: ptr YR_ARENA; buffer_id: uint32; integer: uint32;
-                           `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl, impyaraHdr_arena.}
+                           `ref`: ptr YR_ARENA_REF): cint {.importc, cdecl, impyaraHdr.}
 proc yr_arena_load_stream*(stream: ptr YR_STREAM; arena: ptr ptr YR_ARENA): cint {.
-    importc, cdecl, impyaraHdr_arena.}
+    importc, cdecl, impyaraHdr.}
 proc yr_arena_save_stream*(arena: ptr YR_ARENA; stream: ptr YR_STREAM): cint {.importc,
-    cdecl, impyaraHdr_arena.}
+    cdecl, impyaraHdr.}
 proc yr_bitmask_find_non_colliding_offset*(a: ptr culong; b: ptr culong; len_a: uint32;
-    len_b: uint32; off_a: ptr uint32): uint32 {.importc, cdecl, impyaraHdr_bitmask.}
+    len_b: uint32; off_a: ptr uint32): uint32 {.importc, cdecl, impyaraHdr.}
 proc yr_hash*(seed: uint32; buffer: pointer; len: uint): uint32 {.importc, cdecl,
-    impyaraHdr_hash.}
+    impyaraHdr.}
 proc yr_hash_table_create*(size: cint; table: ptr ptr YR_HASH_TABLE): cint {.importc,
-    cdecl, impyaraHdr_hash.}
+    cdecl, impyaraHdr.}
 proc yr_hash_table_clean*(table: ptr YR_HASH_TABLE;
                          free_value: YR_HASH_TABLE_FREE_VALUE_FUNC) {.importc,
-    cdecl, impyaraHdr_hash.}
+    cdecl, impyaraHdr.}
 proc yr_hash_table_destroy*(table: ptr YR_HASH_TABLE;
                            free_value: YR_HASH_TABLE_FREE_VALUE_FUNC) {.importc,
-    cdecl, impyaraHdr_hash.}
+    cdecl, impyaraHdr.}
 proc yr_hash_table_lookup*(table: ptr YR_HASH_TABLE; key: cstring; ns: cstring): pointer {.
-    importc, cdecl, impyaraHdr_hash.}
+    importc, cdecl, impyaraHdr.}
 proc yr_hash_table_remove*(table: ptr YR_HASH_TABLE; key: cstring; ns: cstring): pointer {.
-    importc, cdecl, impyaraHdr_hash.}
+    importc, cdecl, impyaraHdr.}
 proc yr_hash_table_add*(table: ptr YR_HASH_TABLE; key: cstring; ns: cstring;
-                       value: pointer): cint {.importc, cdecl, impyaraHdr_hash.}
+                       value: pointer): cint {.importc, cdecl, impyaraHdr.}
 proc yr_hash_table_add_uint32*(table: ptr YR_HASH_TABLE; key: cstring; ns: cstring;
-                              value: uint32): cint {.importc, cdecl, impyaraHdr_hash.}
+                              value: uint32): cint {.importc, cdecl, impyaraHdr.}
 proc yr_hash_table_lookup_uint32*(table: ptr YR_HASH_TABLE; key: cstring; ns: cstring): uint32 {.
-    importc, cdecl, impyaraHdr_hash.}
+    importc, cdecl, impyaraHdr.}
 proc yr_hash_table_lookup_raw_key*(table: ptr YR_HASH_TABLE; key: pointer;
                                   key_length: uint; ns: cstring): pointer {.importc,
-    cdecl, impyaraHdr_hash.}
+    cdecl, impyaraHdr.}
 proc yr_hash_table_remove_raw_key*(table: ptr YR_HASH_TABLE; key: pointer;
                                   key_length: uint; ns: cstring): pointer {.importc,
-    cdecl, impyaraHdr_hash.}
+    cdecl, impyaraHdr.}
 proc yr_hash_table_add_raw_key*(table: ptr YR_HASH_TABLE; key: pointer;
                                key_length: uint; ns: cstring; value: pointer): cint {.
-    importc, cdecl, impyaraHdr_hash.}
+    importc, cdecl, impyaraHdr.}
 proc yr_hash_table_add_uint32_raw_key*(table: ptr YR_HASH_TABLE; key: pointer;
                                       key_length: uint; ns: cstring; value: uint32): cint {.
-    importc, cdecl, impyaraHdr_hash.}
+    importc, cdecl, impyaraHdr.}
 proc yr_hash_table_lookup_uint32_raw_key*(table: ptr YR_HASH_TABLE; key: pointer;
-    key_length: uint; ns: cstring): uint32 {.importc, cdecl, impyaraHdr_hash.}
+    key_length: uint; ns: cstring): uint32 {.importc, cdecl, impyaraHdr.}
 proc ss_compare*(s1: ptr SIZED_STRING; s2: ptr SIZED_STRING): cint {.importc, cdecl,
-    impyaraHdr_sizedstr.}
+    impyaraHdr.}
 proc ss_icompare*(s1: ptr SIZED_STRING; s2: ptr SIZED_STRING): cint {.importc, cdecl,
-    impyaraHdr_sizedstr.}
+    impyaraHdr.}
 proc ss_contains*(s1: ptr SIZED_STRING; s2: ptr SIZED_STRING): bool {.importc, cdecl,
-    impyaraHdr_sizedstr.}
+    impyaraHdr.}
 proc ss_icontains*(s1: ptr SIZED_STRING; s2: ptr SIZED_STRING): bool {.importc, cdecl,
-    impyaraHdr_sizedstr.}
+    impyaraHdr.}
 proc ss_startswith*(s1: ptr SIZED_STRING; s2: ptr SIZED_STRING): bool {.importc, cdecl,
-    impyaraHdr_sizedstr.}
+    impyaraHdr.}
 proc ss_istartswith*(s1: ptr SIZED_STRING; s2: ptr SIZED_STRING): bool {.importc, cdecl,
-    impyaraHdr_sizedstr.}
+    impyaraHdr.}
 proc ss_endswith*(s1: ptr SIZED_STRING; s2: ptr SIZED_STRING): bool {.importc, cdecl,
-    impyaraHdr_sizedstr.}
+    impyaraHdr.}
 proc ss_iendswith*(s1: ptr SIZED_STRING; s2: ptr SIZED_STRING): bool {.importc, cdecl,
-    impyaraHdr_sizedstr.}
-proc ss_dup*(s: ptr SIZED_STRING): ptr SIZED_STRING {.importc, cdecl, impyaraHdr_sizedstr.}
-proc ss_new*(s: cstring): ptr SIZED_STRING {.importc, cdecl, impyaraHdr_sizedstr.}
+    impyaraHdr.}
+proc ss_dup*(s: ptr SIZED_STRING): ptr SIZED_STRING {.importc, cdecl, impyaraHdr.}
+proc ss_new*(s: cstring): ptr SIZED_STRING {.importc, cdecl, impyaraHdr.}
 proc ss_convert_to_wide*(s: ptr SIZED_STRING): ptr SIZED_STRING {.importc, cdecl,
-    impyaraHdr_sizedstr.}
-proc yr_stopwatch_start*(stopwatch: ptr YR_STOPWATCH) {.importc, cdecl, impyaraHdr_stopwatch.}
+    impyaraHdr.}
+proc yr_stopwatch_start*(stopwatch: ptr YR_STOPWATCH) {.importc, cdecl, impyaraHdr.}
   ## ```
   ##   yr_stopwatch_start starts measuring time.
   ## ```
 proc yr_stopwatch_elapsed_ns*(stopwatch: ptr YR_STOPWATCH): uint64 {.importc, cdecl,
-    impyaraHdr_stopwatch.}
+    impyaraHdr.}
   ## ```
   ##   yr_stopwatch_elapsed_ns returns the number of nanoseconds elapsed
   ##      since the last call to yr_stopwatch_start.
   ## ```
-proc yr_current_thread_id*(): YR_THREAD_ID {.importc, cdecl, impyaraHdr_threading.}
-proc yr_mutex_create*(a1: ptr YR_MUTEX): cint {.importc, cdecl, impyaraHdr_threading.}
-proc yr_mutex_destroy*(a1: ptr YR_MUTEX): cint {.importc, cdecl, impyaraHdr_threading.}
-proc yr_mutex_lock*(a1: ptr YR_MUTEX): cint {.importc, cdecl, impyaraHdr_threading.}
-proc yr_mutex_unlock*(a1: ptr YR_MUTEX): cint {.importc, cdecl, impyaraHdr_threading.}
+proc yr_current_thread_id*(): YR_THREAD_ID {.importc, cdecl, impyaraHdr.}
+proc yr_mutex_create*(a1: ptr YR_MUTEX): cint {.importc, cdecl, impyaraHdr.}
+proc yr_mutex_destroy*(a1: ptr YR_MUTEX): cint {.importc, cdecl, impyaraHdr.}
+proc yr_mutex_lock*(a1: ptr YR_MUTEX): cint {.importc, cdecl, impyaraHdr.}
+proc yr_mutex_unlock*(a1: ptr YR_MUTEX): cint {.importc, cdecl, impyaraHdr.}
 proc yr_thread_storage_create*(a1: ptr YR_THREAD_STORAGE_KEY): cint {.importc, cdecl,
-    impyaraHdr_threading.}
+    impyaraHdr.}
 proc yr_thread_storage_destroy*(a1: ptr YR_THREAD_STORAGE_KEY): cint {.importc, cdecl,
-    impyaraHdr_threading.}
+    impyaraHdr.}
 proc yr_thread_storage_set_value*(a1: ptr YR_THREAD_STORAGE_KEY; a2: pointer): cint {.
-    importc, cdecl, impyaraHdr_threading.}
+    importc, cdecl, impyaraHdr.}
 proc yr_thread_storage_get_value*(a1: ptr YR_THREAD_STORAGE_KEY): pointer {.importc,
-    cdecl, impyaraHdr_threading.}
+    cdecl, impyaraHdr.}
   ## ```
   ##   Created by Victor Manuel Alvarez on 3/4/20.
   ## ```
 proc yr_notebook_create*(page_size: uint; pool: ptr ptr YR_NOTEBOOK): cint {.importc,
-    cdecl, impyaraHdr_notebook.}
-proc yr_notebook_destroy*(pool: ptr YR_NOTEBOOK): cint {.importc, cdecl, impyaraHdr_notebook.}
+    cdecl, impyaraHdr.}
+proc yr_notebook_destroy*(pool: ptr YR_NOTEBOOK): cint {.importc, cdecl, impyaraHdr.}
 proc yr_notebook_alloc*(notebook: ptr YR_NOTEBOOK; size: uint): pointer {.importc,
-    cdecl, impyaraHdr_notebook.}
-proc yr_re_ast_create*(re_ast: ptr ptr RE_AST): cint {.importc, cdecl, impyaraHdr_re.}
-proc yr_re_ast_destroy*(re_ast: ptr RE_AST) {.importc, cdecl, impyaraHdr_re.}
-proc yr_re_ast_print*(re_ast: ptr RE_AST) {.importc, cdecl, impyaraHdr_re.}
+    cdecl, impyaraHdr.}
+proc yr_re_ast_create*(re_ast: ptr ptr RE_AST): cint {.importc, cdecl, impyaraHdr.}
+proc yr_re_ast_destroy*(re_ast: ptr RE_AST) {.importc, cdecl, impyaraHdr.}
+proc yr_re_ast_print*(re_ast: ptr RE_AST) {.importc, cdecl, impyaraHdr.}
 proc yr_re_ast_extract_literal*(re_ast: ptr RE_AST): ptr SIZED_STRING {.importc, cdecl,
-    impyaraHdr_re.}
+    impyaraHdr.}
 proc yr_re_ast_contains_dot_star*(re_ast: ptr RE_AST): cint {.importc, cdecl,
-    impyaraHdr_re.}
+    impyaraHdr.}
 proc yr_re_ast_split_at_chaining_point*(re_ast: ptr RE_AST;
                                        remainder_re_ast: ptr ptr RE_AST;
                                        min_gap: ptr int32; max_gap: ptr int32): cint {.
-    importc, cdecl, impyaraHdr_re.}
+    importc, cdecl, impyaraHdr.}
 proc yr_re_ast_emit_code*(re_ast: ptr RE_AST; arena: ptr YR_ARENA; backwards_code: cint): cint {.
-    importc, cdecl, impyaraHdr_re.}
-proc yr_re_node_create*(`type`: cint): ptr RE_NODE {.importc, cdecl, impyaraHdr_re.}
-proc yr_re_node_destroy*(node: ptr RE_NODE) {.importc, cdecl, impyaraHdr_re.}
+    importc, cdecl, impyaraHdr.}
+proc yr_re_node_create*(`type`: cint): ptr RE_NODE {.importc, cdecl, impyaraHdr.}
+proc yr_re_node_destroy*(node: ptr RE_NODE) {.importc, cdecl, impyaraHdr.}
 proc yr_re_node_append_child*(node: ptr RE_NODE; child: ptr RE_NODE) {.importc, cdecl,
-    impyaraHdr_re.}
+    impyaraHdr.}
 proc yr_re_node_prepend_child*(node: ptr RE_NODE; child: ptr RE_NODE) {.importc, cdecl,
-    impyaraHdr_re.}
+    impyaraHdr.}
 proc yr_re_exec*(context: ptr YR_SCAN_CONTEXT; code: ptr uint8; input_data: ptr uint8;
                 input_forwards_size: uint; input_backwards_size: uint; flags: cint;
                 callback: RE_MATCH_CALLBACK_FUNC; callback_args: pointer;
-                matches: ptr cint): cint {.importc, cdecl, impyaraHdr_re.}
+                matches: ptr cint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_re_fast_exec*(context: ptr YR_SCAN_CONTEXT; code: ptr uint8;
                      input_data: ptr uint8; input_forwards_size: uint;
                      input_backwards_size: uint; flags: cint;
                      callback: RE_MATCH_CALLBACK_FUNC; callback_args: pointer;
-                     matches: ptr cint): cint {.importc, cdecl, impyaraHdr_re.}
+                     matches: ptr cint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_re_parse*(re_string: cstring; re_ast: ptr ptr RE_AST; error: ptr RE_ERROR): cint {.
-    importc, cdecl, impyaraHdr_re.}
+    importc, cdecl, impyaraHdr.}
 proc yr_re_parse_hex*(hex_string: cstring; re_ast: ptr ptr RE_AST; error: ptr RE_ERROR): cint {.
-    importc, cdecl, impyaraHdr_re.}
+    importc, cdecl, impyaraHdr.}
 proc yr_re_compile*(re_string: cstring; flags: cint; arena: ptr YR_ARENA;
                    `ref`: ptr YR_ARENA_REF; error: ptr RE_ERROR): cint {.importc, cdecl,
-    impyaraHdr_re.}
+    impyaraHdr.}
 proc yr_re_match*(context: ptr YR_SCAN_CONTEXT; re: ptr RE; target: cstring): cint {.
-    importc, cdecl, impyaraHdr_re.}
+    importc, cdecl, impyaraHdr.}
 proc yr_atoms_extract_from_re*(config: ptr YR_ATOMS_CONFIG; re_ast: ptr RE_AST;
                               modifier: YR_MODIFIER;
                               atoms: ptr ptr YR_ATOM_LIST_ITEM;
                               min_atom_quality: ptr cint): cint {.importc, cdecl,
-    impyaraHdr_atoms.}
+    impyaraHdr.}
 proc yr_atoms_extract_from_string*(config: ptr YR_ATOMS_CONFIG; string: ptr uint8;
                                   string_length: cint; modifier: YR_MODIFIER;
                                   atoms: ptr ptr YR_ATOM_LIST_ITEM;
                                   min_atom_quality: ptr cint): cint {.importc, cdecl,
-    impyaraHdr_atoms.}
+    impyaraHdr.}
 proc yr_atoms_extract_triplets*(re_node: ptr RE_NODE;
                                atoms: ptr ptr YR_ATOM_LIST_ITEM): cint {.importc,
-    cdecl, impyaraHdr_atoms.}
+    cdecl, impyaraHdr.}
 proc yr_atoms_heuristic_quality*(config: ptr YR_ATOMS_CONFIG; atom: ptr YR_ATOM): cint {.
-    importc, cdecl, impyaraHdr_atoms.}
+    importc, cdecl, impyaraHdr.}
 proc yr_atoms_table_quality*(config: ptr YR_ATOMS_CONFIG; atom: ptr YR_ATOM): cint {.
-    importc, cdecl, impyaraHdr_atoms.}
+    importc, cdecl, impyaraHdr.}
 proc yr_atoms_min_quality*(config: ptr YR_ATOMS_CONFIG;
                           atom_list: ptr YR_ATOM_LIST_ITEM): cint {.importc, cdecl,
-    impyaraHdr_atoms.}
+    impyaraHdr.}
 proc yr_atoms_list_destroy*(list_head: ptr YR_ATOM_LIST_ITEM) {.importc, cdecl,
-    impyaraHdr_atoms.}
+    impyaraHdr.}
 proc yr_ac_automaton_create*(arena: ptr YR_ARENA; automaton: ptr ptr YR_AC_AUTOMATON): cint {.
-    importc, cdecl, impyaraHdr_atoms.}
+    importc, cdecl, impyaraHdr.}
 proc yr_ac_automaton_destroy*(automaton: ptr YR_AC_AUTOMATON): cint {.importc, cdecl,
-    impyaraHdr_atoms.}
+    impyaraHdr.}
 proc yr_ac_add_string*(automaton: ptr YR_AC_AUTOMATON; string: ptr YR_STRING;
                       string_idx: uint32; atom: ptr YR_ATOM_LIST_ITEM;
-                      arena: ptr YR_ARENA): cint {.importc, cdecl, impyaraHdr_ac.}
+                      arena: ptr YR_ARENA): cint {.importc, cdecl, impyaraHdr.}
 proc yr_ac_compile*(automaton: ptr YR_AC_AUTOMATON; arena: ptr YR_ARENA): cint {.
-    importc, cdecl, impyaraHdr_ac.}
+    importc, cdecl, impyaraHdr.}
 proc yr_ac_print_automaton*(automaton: ptr YR_AC_AUTOMATON) {.importc, cdecl,
-    impyaraHdr_ac.}
+    impyaraHdr.}
 proc yr_compiler_push_file_name*(compiler: ptr YR_COMPILER; file_name: cstring): cint {.
-    importc: "_yr_compiler_push_file_name", cdecl, impyaraHdr_compiler.}
+    importc: "_yr_compiler_push_file_name", cdecl, impyaraHdr.}
 proc yr_compiler_pop_file_name*(compiler: ptr YR_COMPILER) {.
-    importc: "_yr_compiler_pop_file_name", cdecl, impyaraHdr_compiler.}
+    importc: "_yr_compiler_pop_file_name", cdecl, impyaraHdr.}
 proc yr_compiler_get_var_frame*(compiler: ptr YR_COMPILER): cint {.
-    importc: "_yr_compiler_get_var_frame", cdecl, impyaraHdr_compiler.}
+    importc: "_yr_compiler_get_var_frame", cdecl, impyaraHdr.}
 proc yr_compiler_default_include_callback*(include_name: cstring;
     calling_rule_filename: cstring; calling_rule_namespace: cstring;
     user_data: pointer): cstring {.importc: "_yr_compiler_default_include_callback",
-                                cdecl, impyaraHdr_compiler.}
+                                cdecl, impyaraHdr.}
 proc yr_compiler_get_rule_by_idx*(compiler: ptr YR_COMPILER; rule_idx: uint32): ptr YR_RULE {.
-    importc: "_yr_compiler_get_rule_by_idx", cdecl, impyaraHdr_compiler.}
+    importc: "_yr_compiler_get_rule_by_idx", cdecl, impyaraHdr.}
 proc yr_compiler_store_string*(compiler: ptr YR_COMPILER; string: cstring;
                               `ref`: ptr YR_ARENA_REF): cint {.
-    importc: "_yr_compiler_store_string", cdecl, impyaraHdr_compiler.}
+    importc: "_yr_compiler_store_string", cdecl, impyaraHdr.}
 proc yr_compiler_store_data*(compiler: ptr YR_COMPILER; data: pointer;
                             data_length: uint; `ref`: ptr YR_ARENA_REF): cint {.
-    importc: "_yr_compiler_store_data", cdecl, impyaraHdr_compiler.}
+    importc: "_yr_compiler_store_data", cdecl, impyaraHdr.}
 proc yr_compiler_create*(compiler: ptr ptr YR_COMPILER): cint {.importc, cdecl,
-    impyaraHdr_compiler.}
-proc yr_compiler_destroy*(compiler: ptr YR_COMPILER) {.importc, cdecl, impyaraHdr_compiler.}
+    impyaraHdr.}
+proc yr_compiler_destroy*(compiler: ptr YR_COMPILER) {.importc, cdecl, impyaraHdr.}
 proc yr_compiler_set_callback*(compiler: ptr YR_COMPILER;
                               callback: YR_COMPILER_CALLBACK_FUNC;
-                              user_data: pointer) {.importc, cdecl, impyaraHdr_compiler.}
+                              user_data: pointer) {.importc, cdecl, impyaraHdr.}
 proc yr_compiler_set_include_callback*(compiler: ptr YR_COMPILER; include_callback: YR_COMPILER_INCLUDE_CALLBACK_FUNC;
     include_free: YR_COMPILER_INCLUDE_FREE_FUNC; user_data: pointer) {.importc,
-    cdecl, impyaraHdr_compiler.}
+    cdecl, impyaraHdr.}
 proc yr_compiler_set_re_ast_callback*(compiler: ptr YR_COMPILER; re_ast_callback: YR_COMPILER_RE_AST_CALLBACK_FUNC;
                                      user_data: pointer) {.importc, cdecl,
-    impyaraHdr_compiler.}
+    impyaraHdr.}
 proc yr_compiler_set_atom_quality_table*(compiler: ptr YR_COMPILER; table: pointer;
                                         entries: cint; warning_threshold: cuchar) {.
-    importc, cdecl, impyaraHdr_compiler.}
+    importc, cdecl, impyaraHdr.}
 proc yr_compiler_load_atom_quality_table*(compiler: ptr YR_COMPILER;
-    filename: cstring; warning_threshold: cuchar): cint {.importc, cdecl, impyaraHdr_compiler.}
+    filename: cstring; warning_threshold: cuchar): cint {.importc, cdecl, impyaraHdr.}
 proc yr_compiler_add_file*(compiler: ptr YR_COMPILER; rules_file: File;
                           namespace_g: cstring; file_name: cstring): cint {.importc,
-    cdecl, impyaraHdr_compiler.}
+    cdecl, impyaraHdr.}
 proc yr_compiler_add_fd*(compiler: ptr YR_COMPILER; rules_fd: cint;
                         namespace_g: cstring; file_name: cstring): cint {.importc,
-    cdecl, impyaraHdr_compiler.}
+    cdecl, impyaraHdr.}
 proc yr_compiler_add_string*(compiler: ptr YR_COMPILER; rules_string: cstring;
-                            namespace_g: cstring): cint {.importc, cdecl, impyaraHdr_compiler.}
+                            namespace_g: cstring): cint {.importc, cdecl, impyaraHdr.}
 proc yr_compiler_get_error_message*(compiler: ptr YR_COMPILER; buffer: cstring;
                                    buffer_size: cint): cstring {.importc, cdecl,
-    impyaraHdr_compiler.}
+    impyaraHdr.}
 proc yr_compiler_get_current_file_name*(compiler: ptr YR_COMPILER): cstring {.
-    importc, cdecl, impyaraHdr_compiler.}
+    importc, cdecl, impyaraHdr.}
 proc yr_compiler_define_integer_variable*(compiler: ptr YR_COMPILER;
-    identifier: cstring; value: int64): cint {.importc, cdecl, impyaraHdr_compiler.}
+    identifier: cstring; value: int64): cint {.importc, cdecl, impyaraHdr.}
 proc yr_compiler_define_boolean_variable*(compiler: ptr YR_COMPILER;
-    identifier: cstring; value: cint): cint {.importc, cdecl, impyaraHdr_compiler.}
+    identifier: cstring; value: cint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_compiler_define_float_variable*(compiler: ptr YR_COMPILER;
                                        identifier: cstring; value: cdouble): cint {.
-    importc, cdecl, impyaraHdr_compiler.}
+    importc, cdecl, impyaraHdr.}
 proc yr_compiler_define_string_variable*(compiler: ptr YR_COMPILER;
                                         identifier: cstring; value: cstring): cint {.
-    importc, cdecl, impyaraHdr_compiler.}
+    importc, cdecl, impyaraHdr.}
 proc yr_compiler_get_rules*(compiler: ptr YR_COMPILER; rules: ptr ptr YR_RULES): cint {.
-    importc, cdecl, impyaraHdr_compiler.}
+    importc, cdecl, impyaraHdr.}
 proc yr_scan_verify_match*(context: ptr YR_SCAN_CONTEXT; ac_match: ptr YR_AC_MATCH;
                           data: ptr uint8; data_size: uint; data_base: uint64;
-                          offset: uint): cint {.importc, cdecl, impyaraHdr_scan.}
+                          offset: uint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_rules_scan_mem_blocks*(rules: ptr YR_RULES;
                               `iterator`: ptr YR_MEMORY_BLOCK_ITERATOR;
                               flags: cint; callback: YR_CALLBACK_FUNC;
                               user_data: pointer; timeout: cint): cint {.importc,
-    cdecl, impyaraHdr_scan.}
+    cdecl, impyaraHdr.}
 proc yr_rules_scan_mem*(rules: ptr YR_RULES; buffer: ptr uint8; buffer_size: uint;
                        flags: cint; callback: YR_CALLBACK_FUNC; user_data: pointer;
-                       timeout: cint): cint {.importc, cdecl, impyaraHdr_scan.}
+                       timeout: cint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_rules_scan_file*(rules: ptr YR_RULES; filename: cstring; flags: cint;
                         callback: YR_CALLBACK_FUNC; user_data: pointer;
-                        timeout: cint): cint {.importc, cdecl, impyaraHdr_scan.}
+                        timeout: cint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_rules_scan_fd*(rules: ptr YR_RULES; fd: cint; flags: cint;
                       callback: YR_CALLBACK_FUNC; user_data: pointer; timeout: cint): cint {.
-    importc, cdecl, impyaraHdr_scan.}
+    importc, cdecl, impyaraHdr.}
 proc yr_rules_scan_proc*(rules: ptr YR_RULES; pid: cint; flags: cint;
                         callback: YR_CALLBACK_FUNC; user_data: pointer;
-                        timeout: cint): cint {.importc, cdecl, impyaraHdr_scan.}
+                        timeout: cint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_rules_save*(rules: ptr YR_RULES; filename: cstring): cint {.importc, cdecl,
-    impyaraHdr_rules.}
+    impyaraHdr.}
 proc yr_rules_save_stream*(rules: ptr YR_RULES; stream: ptr YR_STREAM): cint {.importc,
-    cdecl, impyaraHdr_rules.}
+    cdecl, impyaraHdr.}
 proc yr_rules_load*(filename: cstring; rules: ptr ptr YR_RULES): cint {.importc, cdecl,
-    impyaraHdr_rules.}
+    impyaraHdr.}
 proc yr_rules_load_stream*(stream: ptr YR_STREAM; rules: ptr ptr YR_RULES): cint {.
-    importc, cdecl, impyaraHdr_rules.}
-proc yr_rules_destroy*(rules: ptr YR_RULES): cint {.importc, cdecl, impyaraHdr_rules.}
+    importc, cdecl, impyaraHdr.}
+proc yr_rules_destroy*(rules: ptr YR_RULES): cint {.importc, cdecl, impyaraHdr.}
 proc yr_rules_define_integer_variable*(rules: ptr YR_RULES; identifier: cstring;
                                       value: int64): cint {.importc, cdecl,
-    impyaraHdr_rules.}
+    impyaraHdr.}
 proc yr_rules_define_boolean_variable*(rules: ptr YR_RULES; identifier: cstring;
-                                      value: cint): cint {.importc, cdecl, impyaraHdr_rules.}
+                                      value: cint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_rules_define_float_variable*(rules: ptr YR_RULES; identifier: cstring;
                                     value: cdouble): cint {.importc, cdecl,
-    impyaraHdr_rules.}
+    impyaraHdr.}
 proc yr_rules_define_string_variable*(rules: ptr YR_RULES; identifier: cstring;
                                      value: cstring): cint {.importc, cdecl,
-    impyaraHdr_rules.}
+    impyaraHdr.}
 proc yr_rules_get_stats*(rules: ptr YR_RULES; stats: ptr YR_RULES_STATS): cint {.
-    importc, cdecl, impyaraHdr_rules.}
-proc yr_rule_disable*(rule: ptr YR_RULE) {.importc, cdecl, impyaraHdr_rules.}
-proc yr_rule_enable*(rule: ptr YR_RULE) {.importc, cdecl, impyaraHdr_rules.}
+    importc, cdecl, impyaraHdr.}
+proc yr_rule_disable*(rule: ptr YR_RULE) {.importc, cdecl, impyaraHdr.}
+proc yr_rule_enable*(rule: ptr YR_RULE) {.importc, cdecl, impyaraHdr.}
 proc yr_rules_from_arena*(arena: ptr YR_ARENA; rules: ptr ptr YR_RULES): cint {.importc,
-    cdecl, impyaraHdr_rules.}
-proc yr_execute_code*(context: ptr YR_SCAN_CONTEXT): cint {.importc, cdecl, impyaraHdr_exec.}
+    cdecl, impyaraHdr.}
+proc yr_execute_code*(context: ptr YR_SCAN_CONTEXT): cint {.importc, cdecl, impyaraHdr.}
 proc yr_object_create*(`type`: int8; identifier: cstring; parent: ptr YR_OBJECT;
-                      `object`: ptr ptr YR_OBJECT): cint {.importc, cdecl, impyaraHdr_object.}
+                      `object`: ptr ptr YR_OBJECT): cint {.importc, cdecl, impyaraHdr.}
 proc yr_object_set_canary*(`object`: ptr YR_OBJECT; canary: cint) {.importc, cdecl,
-    impyaraHdr_object.}
+    impyaraHdr.}
 proc yr_object_function_create*(identifier: cstring; arguments_fmt: cstring;
                                return_fmt: cstring; `func`: YR_MODULE_FUNC;
                                parent: ptr YR_OBJECT; function: ptr ptr YR_OBJECT): cint {.
-    importc, cdecl, impyaraHdr_object.}
+    importc, cdecl, impyaraHdr.}
 proc yr_object_from_external_variable*(external: ptr YR_EXTERNAL_VARIABLE;
                                       `object`: ptr ptr YR_OBJECT): cint {.importc,
-    cdecl, impyaraHdr_object.}
-proc yr_object_destroy*(`object`: ptr YR_OBJECT) {.importc, cdecl, impyaraHdr_object.}
+    cdecl, impyaraHdr.}
+proc yr_object_destroy*(`object`: ptr YR_OBJECT) {.importc, cdecl, impyaraHdr.}
 proc yr_object_copy*(`object`: ptr YR_OBJECT; object_copy: ptr ptr YR_OBJECT): cint {.
-    importc, cdecl, impyaraHdr_object.}
+    importc, cdecl, impyaraHdr.}
 proc yr_object_lookup_field*(`object`: ptr YR_OBJECT; field_name: cstring): ptr YR_OBJECT {.
-    importc, cdecl, impyaraHdr_object.}
+    importc, cdecl, impyaraHdr.}
 proc yr_object_lookup*(root: ptr YR_OBJECT; flags: cint; pattern: cstring): ptr YR_OBJECT {.
-    importc, cdecl, impyaraHdr_object, varargs.}
+    importc, cdecl, impyaraHdr, varargs.}
 proc yr_object_has_undefined_value*(`object`: ptr YR_OBJECT; field: cstring): bool {.
-    importc, cdecl, impyaraHdr_object, varargs.}
+    importc, cdecl, impyaraHdr, varargs.}
 proc yr_object_get_float*(`object`: ptr YR_OBJECT; field: cstring): cdouble {.importc,
-    cdecl, impyaraHdr_object, varargs.}
+    cdecl, impyaraHdr, varargs.}
 proc yr_object_get_integer*(`object`: ptr YR_OBJECT; field: cstring): int64 {.importc,
-    cdecl, impyaraHdr_object, varargs.}
+    cdecl, impyaraHdr, varargs.}
 proc yr_object_get_string*(`object`: ptr YR_OBJECT; field: cstring): ptr SIZED_STRING {.
-    importc, cdecl, impyaraHdr_object, varargs.}
+    importc, cdecl, impyaraHdr, varargs.}
 proc yr_object_set_integer*(value: int64; `object`: ptr YR_OBJECT; field: cstring): cint {.
-    importc, cdecl, impyaraHdr_object, varargs.}
+    importc, cdecl, impyaraHdr, varargs.}
 proc yr_object_set_float*(value: cdouble; `object`: ptr YR_OBJECT; field: cstring): cint {.
-    importc, cdecl, impyaraHdr_object, varargs.}
+    importc, cdecl, impyaraHdr, varargs.}
 proc yr_object_set_string*(value: cstring; len: uint; `object`: ptr YR_OBJECT;
-                          field: cstring): cint {.importc, cdecl, impyaraHdr_object, varargs.}
+                          field: cstring): cint {.importc, cdecl, impyaraHdr, varargs.}
 proc yr_object_array_length*(`object`: ptr YR_OBJECT): cint {.importc, cdecl,
-    impyaraHdr_object.}
+    impyaraHdr.}
 proc yr_object_array_get_item*(`object`: ptr YR_OBJECT; flags: cint; index: cint): ptr YR_OBJECT {.
-    importc, cdecl, impyaraHdr_object.}
+    importc, cdecl, impyaraHdr.}
 proc yr_object_array_set_item*(`object`: ptr YR_OBJECT; item: ptr YR_OBJECT;
-                              index: cint): cint {.importc, cdecl, impyaraHdr_object.}
+                              index: cint): cint {.importc, cdecl, impyaraHdr.}
 proc yr_object_dict_get_item*(`object`: ptr YR_OBJECT; flags: cint; key: cstring): ptr YR_OBJECT {.
-    importc, cdecl, impyaraHdr_object.}
+    importc, cdecl, impyaraHdr.}
 proc yr_object_dict_set_item*(`object`: ptr YR_OBJECT; item: ptr YR_OBJECT;
-                             key: cstring): cint {.importc, cdecl, impyaraHdr_object.}
+                             key: cstring): cint {.importc, cdecl, impyaraHdr.}
 proc yr_object_structure_set_member*(`object`: ptr YR_OBJECT; member: ptr YR_OBJECT): cint {.
-    importc, cdecl, impyaraHdr_object.}
+    importc, cdecl, impyaraHdr.}
 proc yr_object_get_root*(`object`: ptr YR_OBJECT): ptr YR_OBJECT {.importc, cdecl,
-    impyaraHdr_object.}
+    impyaraHdr.}
 proc yr_object_print_data*(`object`: ptr YR_OBJECT; indent: cint;
-                          print_identifier: cint) {.importc, cdecl, impyaraHdr_object.}
-proc yr_initialize*(): cint {.importc, cdecl, impyaraHdr_lyara.}
-proc yr_finalize*(): cint {.importc, cdecl, impyaraHdr_lyara.}
+                          print_identifier: cint) {.importc, cdecl, impyaraHdr.}
+proc yr_initialize*(): cint {.importc, cdecl, impyaraHdr.}
+proc yr_finalize*(): cint {.importc, cdecl, impyaraHdr.}
 proc yr_set_configuration*(a1: YR_CONFIG_NAME; a2: pointer): cint {.importc, cdecl,
-    impyaraHdr_lyara.}
+    impyaraHdr.}
 proc yr_get_configuration*(a1: YR_CONFIG_NAME; a2: pointer): cint {.importc, cdecl,
-    impyaraHdr_lyara.}
-proc yr_modules_initialize*(): cint {.importc, cdecl, impyaraHdr_modules.}
-proc yr_modules_finalize*(): cint {.importc, cdecl, impyaraHdr_modules.}
+    impyaraHdr.}
+proc yr_modules_initialize*(): cint {.importc, cdecl, impyaraHdr.}
+proc yr_modules_finalize*(): cint {.importc, cdecl, impyaraHdr.}
 proc yr_modules_do_declarations*(module_name: cstring;
                                 main_structure: ptr YR_OBJECT): cint {.importc,
-    cdecl, impyaraHdr_modules.}
+    cdecl, impyaraHdr.}
 proc yr_modules_load*(module_name: cstring; context: ptr YR_SCAN_CONTEXT): cint {.
-    importc, cdecl, impyaraHdr_modules.}
+    importc, cdecl, impyaraHdr.}
 proc yr_modules_unload_all*(context: ptr YR_SCAN_CONTEXT): cint {.importc, cdecl,
-    impyaraHdr_modules.}
+    impyaraHdr.}
 proc yr_scanner_create*(rules: ptr YR_RULES; scanner: ptr ptr YR_SCANNER): cint {.
-    importc, cdecl, impyaraHdr_scanner.}
-proc yr_scanner_destroy*(scanner: ptr YR_SCANNER) {.importc, cdecl, impyaraHdr_scanner.}
+    importc, cdecl, impyaraHdr.}
+proc yr_scanner_destroy*(scanner: ptr YR_SCANNER) {.importc, cdecl, impyaraHdr.}
 proc yr_scanner_set_callback*(scanner: ptr YR_SCANNER; callback: YR_CALLBACK_FUNC;
-                             user_data: pointer) {.importc, cdecl, impyaraHdr_scanner.}
+                             user_data: pointer) {.importc, cdecl, impyaraHdr.}
 proc yr_scanner_set_timeout*(scanner: ptr YR_SCANNER; timeout: cint) {.importc, cdecl,
-    impyaraHdr_scanner.}
+    impyaraHdr.}
 proc yr_scanner_set_flags*(scanner: ptr YR_SCANNER; flags: cint) {.importc, cdecl,
-    impyaraHdr_scanner.}
+    impyaraHdr.}
 proc yr_scanner_define_integer_variable*(scanner: ptr YR_SCANNER;
                                         identifier: cstring; value: int64): cint {.
-    importc, cdecl, impyaraHdr_scanner.}
+    importc, cdecl, impyaraHdr.}
 proc yr_scanner_define_boolean_variable*(scanner: ptr YR_SCANNER;
                                         identifier: cstring; value: cint): cint {.
-    importc, cdecl, impyaraHdr_scanner.}
+    importc, cdecl, impyaraHdr.}
 proc yr_scanner_define_float_variable*(scanner: ptr YR_SCANNER; identifier: cstring;
                                       value: cdouble): cint {.importc, cdecl,
-    impyaraHdr_scanner.}
+    impyaraHdr.}
 proc yr_scanner_define_string_variable*(scanner: ptr YR_SCANNER;
                                        identifier: cstring; value: cstring): cint {.
-    importc, cdecl, impyaraHdr_scanner.}
+    importc, cdecl, impyaraHdr.}
 proc yr_scanner_scan_mem_blocks*(scanner: ptr YR_SCANNER;
                                 `iterator`: ptr YR_MEMORY_BLOCK_ITERATOR): cint {.
-    importc, cdecl, impyaraHdr_scanner.}
+    importc, cdecl, impyaraHdr.}
 proc yr_scanner_scan_file*(scanner: ptr YR_SCANNER; filename: cstring): cint {.importc,
-    cdecl, impyaraHdr_scanner.}
+    cdecl, impyaraHdr.}
 proc yr_scanner_scan_fd*(scanner: ptr YR_SCANNER; fd: cint): cint {.importc, cdecl,
-    impyaraHdr_scanner.}
+    impyaraHdr.}
 proc yr_scanner_scan_proc*(scanner: ptr YR_SCANNER; pid: cint): cint {.importc, cdecl,
-    impyaraHdr_scanner.}
+    impyaraHdr.}
 proc yr_scanner_last_error_rule*(scanner: ptr YR_SCANNER): ptr YR_RULE {.importc,
-    cdecl, impyaraHdr_scanner.}
+    cdecl, impyaraHdr.}
 proc yr_scanner_last_error_string*(scanner: ptr YR_SCANNER): ptr YR_STRING {.importc,
-    cdecl, impyaraHdr_scanner.}
+    cdecl, impyaraHdr.}
 proc yr_scanner_get_profiling_info*(scanner: ptr YR_SCANNER): ptr YR_RULE_PROFILING_INFO {.
-    importc, cdecl, impyaraHdr_scanner.}
+    importc, cdecl, impyaraHdr.}
 proc yr_scanner_reset_profiling_info*(scanner: ptr YR_SCANNER) {.importc, cdecl,
-    impyaraHdr_scanner.}
+    impyaraHdr.}
 proc yr_scanner_print_profiling_info*(scanner: ptr YR_SCANNER): cint {.importc, cdecl,
-    impyaraHdr_scanner.}
-proc yr_calloc*(count: uint; size: uint): pointer {.importc, cdecl, impyaraHdr_mem.}
-proc yr_malloc*(size: uint): pointer {.importc, cdecl, impyaraHdr_mem.}
-proc yr_realloc*(`ptr`: pointer; size: uint): pointer {.importc, cdecl, impyaraHdr_mem.}
-proc yr_free*(`ptr`: pointer) {.importc, cdecl, impyaraHdr_mem.}
-proc yr_strdup*(str: cstring): cstring {.importc, cdecl, impyaraHdr_mem.}
-proc yr_strndup*(str: cstring; n: uint): cstring {.importc, cdecl, impyaraHdr_mem.}
-proc yr_heap_alloc*(): cint {.importc, cdecl, impyaraHdr_mem.}
-proc yr_heap_free*(): cint {.importc, cdecl, impyaraHdr_mem.}
+    impyaraHdr.}
+proc yr_calloc*(count: uint; size: uint): pointer {.importc, cdecl, impyaraHdr.}
+proc yr_malloc*(size: uint): pointer {.importc, cdecl, impyaraHdr.}
+proc yr_realloc*(`ptr`: pointer; size: uint): pointer {.importc, cdecl, impyaraHdr.}
+proc yr_free*(`ptr`: pointer) {.importc, cdecl, impyaraHdr.}
+proc yr_strdup*(str: cstring): cstring {.importc, cdecl, impyaraHdr.}
+proc yr_strndup*(str: cstring; n: uint): cstring {.importc, cdecl, impyaraHdr.}
+proc yr_heap_alloc*(): cint {.importc, cdecl, impyaraHdr.}
+proc yr_heap_free*(): cint {.importc, cdecl, impyaraHdr.}
 {.pop.}
